@@ -1,20 +1,20 @@
 module Main exposing (..)
 
 import Html exposing (Html, div, program)
-import List
+import Array exposing (fromList)
 import Types exposing (..)
-import Colors exposing (Color(..))
-import Board exposing (board)
+import Board
 
 
 init =
     ( { board =
-            [ [ Blue, Blue, Green, Green, Green ]
-            , [ Green, Yellow, Yellow, Red, Green ]
-            , [ Red, Red, Red, Red, Yellow ]
-            , [ Blue, Yellow, Red, Red, Blue ]
-            , [ Blue, Blue, Green, Green, Red ]
-            ]
+            fromList
+                [ fromList [ Blue, Blue, Green, Green, Green ]
+                , fromList [ Green, Yellow, Yellow, Red, Green ]
+                , fromList [ Red, Red, Red, Red, Yellow ]
+                , fromList [ Blue, Yellow, Red, Red, Blue ]
+                , fromList [ Blue, Blue, Green, Red, Red ]
+                ]
       }
     , Cmd.none
     )
@@ -22,11 +22,20 @@ init =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case Debug.log "Msg" msg of
-        Touch ( x, y ) ->
-            ( model
-            , Cmd.none
-            )
+    case msg of
+        Touch coord ->
+            let
+                kins =
+                    (Board.searchKins model.board coord)
+
+                newBoard =
+                    kins
+                        |> List.foldr (\coord board -> Board.update board Grey coord) model.board
+                        |> Board.fallRightColors
+            in
+                ( { model | board = newBoard }
+                , Cmd.none
+                )
 
 
 subscriptions : Model -> Sub Msg
@@ -36,7 +45,7 @@ subscriptions model =
 
 view : Model -> Html Msg
 view data =
-    div [] [ (board data.board) ]
+    div [] [ (Board.view data.board) ]
 
 
 main =
