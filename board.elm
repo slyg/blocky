@@ -1,8 +1,10 @@
-module Main exposing (..)
+module Board exposing (tile, tilesRow, board)
 
-import Html exposing (Html, text, div)
+import Html exposing (Html, div, text)
 import Html.Attributes exposing (style)
-import List
+import Html.Events exposing (onClick)
+import Colors exposing (Color(..), toHtmlColor)
+import Types exposing (Msg(..))
 
 
 (~>) : a -> b -> ( a, b )
@@ -10,69 +12,41 @@ import List
     ( a, b )
 
 
-type Msg
-    = Noop
-
-
-type Color
-    = Blue
-    | Green
-    | Yellow
-    | Red
-    | Grey
-
-
-board : List (List Color)
-board =
-    [ [ Blue, Blue, Green, Green, Green ]
-    , [ Green, Yellow, Yellow, Red, Green ]
-    , [ Red, Red, Red, Red, Yellow ]
-    , [ Blue, Yellow, Green, Green, Blue ]
-    , [ Blue, Blue, Green, Green, Red ]
-    ]
-
-
-tile : Color -> Html Msg
-tile color =
+tile : Int -> Int -> Color -> Html Msg
+tile i j color =
     let
-        emphaseStyle =
-            case color of
-                Blue ->
-                    ("backgroundColor" ~> "royalblue")
-
-                Green ->
-                    ("backgroundColor" ~> "darkseagreen ")
-
-                Yellow ->
-                    ("backgroundColor" ~> "gold ")
-
-                Red ->
-                    ("backgroundColor" ~> "indianred")
-
-                Grey ->
-                    ("backgroundColor" ~> "grey")
+        tileDimension =
+            "100px"
 
         tileStyle =
-            emphaseStyle
-                :: [ "width" ~> "100px"
-                   , "height" ~> "100px"
-                   , "padding" ~> "0"
-                   , "margin" ~> "1px 0 0 1px"
-                   , "float" ~> "left"
-                   ]
+            [ "backgroundColor" ~> toHtmlColor color
+            , "width" ~> tileDimension
+            , "height" ~> tileDimension
+            , "padding" ~> "0"
+            , "margin" ~> "1px 0 0 1px"
+            , "float" ~> "left"
+            ]
+
+        coords =
+            (toString i) ++ (toString j)
     in
-        div [ style tileStyle ] []
+        div
+            [ style tileStyle
+            , onClick (Touch ( i, j ))
+            ]
+            [ text coords ]
 
 
-tilesRow : List Color -> Html Msg
-tilesRow tilesRow =
-    div [] (List.map tile tilesRow)
+tilesRow : Int -> List Color -> Html Msg
+tilesRow i tilesRow =
+    div [] (List.indexedMap (tile i) tilesRow)
 
 
-main =
+board : List (List Color) -> Html Msg
+board data =
     let
         width =
-            board
+            data
                 |> List.length
                 |> (*) 101
                 |> toString
@@ -84,8 +58,8 @@ main =
             ]
 
         tiles =
-            board
-                |> List.map tilesRow
+            data
+                |> List.indexedMap tilesRow
     in
         div [ style layoutStyle ]
             [ div [] tiles
