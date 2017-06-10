@@ -33,3 +33,4 @@ type Direction
 
 type Msg
     = Touch Coord
+    | Reset
