@@ -1,4 +1,4 @@
-module Board exposing (view, update, searchKins, fallRightColors)
+module Board exposing (..)
 
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (style)
@@ -24,7 +24,7 @@ toHtmlColor c =
             "darkseagreen"
 
         Yellow ->
-            "gold "
+            "gold"
 
         Red ->
             "indianred"
@@ -167,6 +167,10 @@ getAdjacentKins board coord =
                 |> List.filter (\coord -> (getColor coord) == targetColor)
     in
         siblings
+
+
+
+-- Use BFS (Breadth First Search) to find same color siblings, named kins here
 
 
 searchKinsRec : Board -> Coord -> List Coord -> Set Coord -> List Coord
