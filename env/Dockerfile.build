@@ -1,0 +1,15 @@
+FROM node:8.1.0
+
+WORKDIR /www
+
+RUN npm install -g --unsafe \
+      elm@0.18.0 \
+      elm-test@0.18.4
+
+COPY elm-package.json ./
+COPY tests/elm-package.json ./tests/
+
+RUN elm-package install -y \
+ && cd tests \
+ && elm-package install -y
+
