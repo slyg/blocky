@@ -4,6 +4,9 @@ import Html exposing (Html, div, button, text, program)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
 import Array exposing (fromList)
+import Task
+import Process
+import Time exposing (Time)
 import Types exposing (..)
 import Board
 
@@ -18,9 +21,18 @@ init =
                 , fromList [ Blue, Yellow, Red, Red, Green, Yellow ]
                 , fromList [ Blue, Blue, Green, Red, Red, Yellow ]
                 ]
+      , finished = False
       }
     , Cmd.none
     )
+
+
+delay : Time -> Msg -> Cmd Msg
+delay time msg =
+    time
+        |> Process.sleep
+        |> Task.andThen (always <| Task.succeed msg)
+        |> Task.perform identity
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -37,9 +49,30 @@ update msg model =
                 newBoard =
                     kins
                         |> List.foldr (\coord board -> Board.update board Grey coord) model.board
-                        |> Board.fallRightColors
             in
-                ( { model | board = newBoard }
+                ( { model
+                    | board = newBoard
+                  }
+                , delay (Time.second * 0.2) Fall
+                )
+
+        Fall ->
+            let
+                rowIsCompleted row =
+                    row
+                        |> Array.foldl (\color acc -> acc && color == Grey) True
+
+                boardIsCompleted =
+                    Debug.log "truc"
+                        (model.board
+                            |> Array.map rowIsCompleted
+                            |> Array.foldl (\completed acc -> acc && completed) True
+                        )
+            in
+                ( { model
+                    | board = Board.fallRightColors model.board
+                    , finished = boardIsCompleted
+                  }
                 , Cmd.none
                 )
 
@@ -50,13 +83,22 @@ subscriptions model =
 
 
 view : Model -> Html Msg
-view data =
-    div []
-        [ (Board.view data.board)
-        , div [ style [ ( "text-align", "center" ) ] ]
-            [ button [ onClick Reset ] [ text "Reset" ]
+view model =
+    let
+        restartButton =
+            case model.finished of
+                False ->
+                    div [] []
+
+                True ->
+                    div
+                        [ style [ ( "text-align", "center" ) ] ]
+                        [ button [ onClick Reset ] [ text "Restart" ] ]
+    in
+        div []
+            [ Board.view model.board
+            , restartButton
             ]
-        ]
 
 
 main =

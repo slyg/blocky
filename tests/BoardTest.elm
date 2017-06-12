@@ -1,11 +1,9 @@
 module BoardTest exposing (..)
 
 import Array exposing (Array)
-import Set exposing (Set)
 import Maybe exposing (..)
 import Test exposing (..)
 import Expect exposing (equal)
-import Fuzz exposing (list, int, string)
 import Board exposing (..)
 import Types exposing (..)
 

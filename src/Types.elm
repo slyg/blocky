@@ -17,6 +17,7 @@ type alias Board =
 
 type alias Model =
     { board : Board
+    , finished : Bool
     }
 
 
@@ -34,3 +35,4 @@ type Direction
 type Msg
     = Touch Coord
     | Reset
+    | Fall
