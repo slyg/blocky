@@ -1,17 +1,12 @@
 module Board exposing (..)
 
-import Html exposing (Html, div, text)
+import Html exposing (Html, div)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
 import Array exposing (Array)
 import Set exposing (Set)
 import Maybe exposing (andThen)
 import Types exposing (..)
-
-
-(~>) : a -> b -> ( a, b )
-(~>) a b =
-    ( a, b )
 
 
 toHtmlColor : Color -> String
@@ -39,27 +34,26 @@ tile i j color =
         tileDimension =
             "100px"
 
-        tileStyle =
-            [ "backgroundColor" ~> toHtmlColor color
-            , "width" ~> tileDimension
-            , "height" ~> tileDimension
-            , "padding" ~> "0"
-            , "margin" ~> "1px 0 0 1px"
-            , "float" ~> "left"
-            , "cursor" ~> "pointer"
-            , "transition" ~> "background-color .1s ease"
+        tileAttributes =
+            [ (style "backgroundColor" (toHtmlColor color))
+            , (style "width" tileDimension)
+            , (style "height" tileDimension)
+            , (style "padding" "0")
+            , (style "margin" "1px 0 0 1px")
+            , (style "float" "left")
+            , (style "cursor" "pointer")
+            , (style "transition" "background-color .1s ease")
+            , onClick (Touch ( i, j ))
             ]
     in
         div
-            [ style tileStyle
-            , onClick (Touch ( i, j ))
-            ]
+            tileAttributes
             []
 
 
 tilesRow : Int -> Array Color -> Html Msg
-tilesRow i tilesRow =
-    div [] (tilesRow |> Array.indexedMap (tile i) |> Array.toList)
+tilesRow i tr =
+    div [] (tr |> Array.indexedMap (tile i) |> Array.toList)
 
 
 view : Board -> Html Msg
@@ -71,18 +65,18 @@ view data =
         width =
             colNum
                 |> (*) 101
-                |> toString
+                |> String.fromInt
 
         height =
             rowNum
                 |> (*) 101
-                |> toString
+                |> String.fromInt
 
         layoutStyle =
-            [ "margin" ~> "0 auto"
-            , "width" ~> (width ++ "px")
-            , "height" ~> (height ++ "px")
-            , "transform" ~> "perspective(1010px) rotateX(60deg) rotateZ(90deg)"
+            [ (style "margin" "0 auto")
+            , (style "width" (width ++ "px"))
+            , (style "height" (height ++ "px"))
+            , (style "transform" "perspective(1010px) rotateX(60deg) rotateZ(90deg)")
             ]
 
         tiles =
@@ -90,7 +84,7 @@ view data =
                 |> Array.indexedMap tilesRow
                 |> Array.toList
     in
-        div [ style layoutStyle ]
+        div layoutStyle
             [ div [] tiles
             ]
 
@@ -164,7 +158,7 @@ getAdjacentKins board coord =
             directions
                 |> List.map (getSiblingCoordinates coord)
                 |> List.filter (\( i, j ) -> i < maxI && j < maxJ && i > -1 && j > -1)
-                |> List.filter (\coord -> (getColor coord) == targetColor)
+                |> List.filter (\c -> (getColor c) == targetColor)
     in
         siblings
 
@@ -181,7 +175,7 @@ searchKinsRec board coord queue visited =
 
         nextUnVisitedKin =
             kins
-                |> List.filter (\coord -> not (Set.member coord visited))
+                |> List.filter (\c -> not (Set.member c visited))
                 |> List.head
     in
         case nextUnVisitedKin of

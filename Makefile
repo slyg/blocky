@@ -40,7 +40,7 @@ dev: build-image
 
 test: build-image
 	@echo "$(.YELLOW)Running tests$(.NC)"
-	$(.DEV_CMD) elm test
+	$(.DEV_CMD) npx elm-test
 
 serve:
 	@echo "$(.YELLOW)Serving app on http://localhost:8080$(.NC)"

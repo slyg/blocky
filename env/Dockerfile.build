@@ -1,15 +1,12 @@
-FROM node:8.1.0
+FROM node:lts-slim
 
 WORKDIR /www
 
-RUN npm install -g --unsafe \
-      elm@0.18.0 \
-      elm-test@0.18.4
+RUN apt-get update && apt-get install curl -y \
+    && curl -L -o elm.gz https://github.com/elm/compiler/releases/download/0.19.1/binary-for-linux-64-bit.gz \
+    && gunzip elm.gz \
+    && chmod +x elm \
+    && mv elm /usr/local/bin/elm \
+    && npm install --save-dev elm-test
 
-COPY elm-package.json ./
-COPY tests/elm-package.json ./tests/
-
-RUN elm-package install -y \
- && cd tests \
- && elm-package install -y
-
+COPY elm.json ./

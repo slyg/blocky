@@ -1,17 +1,17 @@
 module Main exposing (..)
 
-import Html exposing (Html, div, button, text, program)
+import Html exposing (Html, div, button, text)
+import Browser
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
 import Array exposing (fromList)
 import Task
 import Process
-import Time exposing (Time)
 import Types exposing (..)
 import Board
 
-
-init =
+init : () -> (Model, Cmd msg)
+init _ =
     ( { board =
             fromList
                 [ fromList [ Blue, Blue, Green, Green, Yellow, Yellow ]
@@ -27,7 +27,7 @@ init =
     )
 
 
-delay : Time -> Msg -> Cmd Msg
+delay : Float -> Msg -> Cmd Msg
 delay time msg =
     time
         |> Process.sleep
@@ -39,7 +39,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Reset ->
-            init
+            init ()
 
         Touch coord ->
             let
@@ -48,12 +48,12 @@ update msg model =
 
                 newBoard =
                     kins
-                        |> List.foldr (\coord board -> Board.update board Grey coord) model.board
+                        |> List.foldr (\c board -> Board.update board Grey c) model.board
             in
                 ( { model
                     | board = newBoard
                   }
-                , delay (Time.second * 0.2) Fall
+                , delay (1 * 0.2) Fall
                 )
 
         Fall ->
@@ -78,7 +78,7 @@ update msg model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Sub.none
 
 
@@ -86,14 +86,13 @@ view : Model -> Html Msg
 view model =
     let
         restartButton =
-            case model.finished of
-                False ->
-                    div [] []
-
-                True ->
-                    div
-                        [ style [ ( "text-align", "center" ) ] ]
-                        [ button [ onClick Reset ] [ text "Restart" ] ]
+            if model.finished
+            then
+                div
+                    [ style  "text-align" "center" ]
+                    [ button [ onClick Reset ] [ text "Restart" ] ]
+            else
+                div [] []
     in
         div []
             [ Board.view model.board
@@ -101,8 +100,9 @@ view model =
             ]
 
 
+main : Program () Model Msg
 main =
-    program
+    Browser.element
         { init = init
         , view = view
         , update = update

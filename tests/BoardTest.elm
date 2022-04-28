@@ -1,10 +1,10 @@
 module BoardTest exposing (..)
 
 import Array exposing (Array)
+import Board exposing (..)
+import Expect exposing (equal)
 import Maybe exposing (..)
 import Test exposing (..)
-import Expect exposing (equal)
-import Board exposing (..)
 import Types exposing (..)
 
 
@@ -165,6 +165,7 @@ suite =
         ]
 
 
+testBoard : Array (Array Color)
 testBoard =
     Array.fromList
         [ Array.fromList [ Blue, Blue, Red ]
@@ -172,6 +173,7 @@ testBoard =
         ]
 
 
+complexTestBoard : Array (Array Color)
 complexTestBoard =
     Array.fromList
         [ Array.fromList [ Blue, Grey, Grey, Red, Red, Red ]
@@ -184,6 +186,7 @@ complexTestBoard =
         ]
 
 
+complexTestBoardOrdered : Array (Array Color)
 complexTestBoardOrdered =
     Array.fromList
         [ Array.fromList [ Grey, Grey, Blue, Red, Red, Red ]
