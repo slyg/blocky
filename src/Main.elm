@@ -11,15 +11,26 @@ import Types exposing (..)
 import Board
 import Random exposing (Generator)
 import Debug exposing (toString)
+import Array exposing (toList)
+import Random.Array
 
 
 colorList : Array Color
 colorList =
     fromList [ Red, Green, Blue, Yellow, Grey ]
 
-randGenerator : Generator Int
-randGenerator =
-    Random.int 0 ((Array.length colorList) - 1 )
+indexesToColor : Array Int -> Array Color
+indexesToColor indexes =
+    indexes
+        |> Array.map (\index -> Maybe.withDefault Red (Array.get index colorList) )
+
+randRowGenerator : Generator (Array Int)
+randRowGenerator =
+    let
+        rowLen = Array.length colorList + 1
+        gen = Random.int 0 (rowLen - 1)
+    in
+        Random.Array.array rowLen gen
 
 defaultBoard : Board
 defaultBoard =
@@ -38,7 +49,7 @@ init _ =
       , finished = False
       , seed = Nothing
       }
-    , Random.generate UpdateSeed randGenerator
+    , Random.generate UpdateSeed randRowGenerator
     )
 
 
@@ -118,7 +129,14 @@ view model =
                 Nothing ->
                     "No seed"
                 Just seed ->
-                    (seed |> toString)
+                    let
+                        colorsString =
+                            indexesToColor seed
+                                |> Array.map (\color -> color |> toString)
+                                |> toList
+                                |> toString
+                    in
+                        colorsString
     in
         div []
             [ div []

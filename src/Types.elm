@@ -18,7 +18,7 @@ type alias Board =
 type alias Model =
     { board : Board
     , finished : Bool
-    , seed : Maybe Int
+    , seed : Maybe (Array Int)
     }
 
 
@@ -37,4 +37,4 @@ type Msg
     = Touch Coord
     | Reset
     | Fall
-    | UpdateSeed Int
+    | UpdateSeed (Array Int)
