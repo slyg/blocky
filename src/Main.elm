@@ -4,26 +4,41 @@ import Html exposing (Html, div, button, text)
 import Browser
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
-import Array exposing (fromList)
+import Array exposing (fromList, Array)
 import Task
 import Process
 import Types exposing (..)
 import Board
+import Random exposing (Generator)
+import Debug exposing (toString)
 
-init : () -> (Model, Cmd msg)
+
+colorList : Array Color
+colorList =
+    fromList [ Red, Green, Blue, Yellow, Grey ]
+
+randGenerator : Generator Int
+randGenerator =
+    Random.int 0 ((Array.length colorList) - 1 )
+
+defaultBoard : Board
+defaultBoard =
+    fromList
+        [ fromList [ Blue, Blue, Green, Green, Yellow, Yellow ]
+        , fromList [ Blue, Blue, Yellow, Yellow, Yellow, Yellow ]
+        , fromList [ Green, Yellow, Yellow, Red, Green, Yellow ]
+        , fromList [ Red, Red, Red, Red, Green, Yellow ]
+        , fromList [ Blue, Yellow, Red, Red, Green, Yellow ]
+        , fromList [ Blue, Blue, Green, Red, Red, Yellow ]
+        ]
+
+init : () -> (Model, Cmd Msg)
 init _ =
-    ( { board =
-            fromList
-                [ fromList [ Blue, Blue, Green, Green, Yellow, Yellow ]
-                , fromList [ Blue, Blue, Yellow, Yellow, Yellow, Yellow ]
-                , fromList [ Green, Yellow, Yellow, Red, Green, Yellow ]
-                , fromList [ Red, Red, Red, Red, Green, Yellow ]
-                , fromList [ Blue, Yellow, Red, Red, Green, Yellow ]
-                , fromList [ Blue, Blue, Green, Red, Red, Yellow ]
-                ]
+    ( { board = defaultBoard
       , finished = False
+      , seed = Nothing
       }
-    , Cmd.none
+    , Random.generate UpdateSeed randGenerator
     )
 
 
@@ -38,6 +53,10 @@ delay time msg =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+
+        UpdateSeed seed ->
+            ( { model | seed = Just seed }, Cmd.none )
+
         Reset ->
             init ()
 
@@ -93,10 +112,23 @@ view model =
                     [ button [ onClick Reset ] [ text "Restart" ] ]
             else
                 div [] []
+        seedValue : String
+        seedValue =
+            case model.seed of
+                Nothing ->
+                    "No seed"
+                Just seed ->
+                    (seed |> toString)
     in
         div []
-            [ Board.view model.board
-            , restartButton
+            [ div []
+                [ Board.view model.board
+                , restartButton
+                ]
+            , div []
+                [ text "Seed: "
+                , text seedValue
+                ]
             ]
 
 
