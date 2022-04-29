@@ -19,18 +19,23 @@ colorList : Array Color
 colorList =
     fromList [ Red, Green, Blue, Yellow, Grey ]
 
-indexesToColor : Array Int -> Array Color
+indexesToColor : (Array (Array Int)) -> Board
 indexesToColor indexes =
     indexes
-        |> Array.map (\index -> Maybe.withDefault Red (Array.get index colorList) )
+        |> Array.map (\j -> 
+            j 
+            |> Array.map (\i -> 
+                 Maybe.withDefault Red (Array.get i colorList)
+            ) 
+        )
 
-randRowGenerator : Generator (Array Int)
-randRowGenerator =
+randMatrixGenerator : Generator (Array (Array Int))
+randMatrixGenerator =
     let
         rowLen = Array.length colorList + 1
         gen = Random.int 0 (rowLen - 1)
     in
-        Random.Array.array rowLen gen
+        Random.Array.array rowLen (Random.Array.array rowLen gen)
 
 defaultBoard : Board
 defaultBoard =
@@ -49,7 +54,7 @@ init _ =
       , finished = False
       , seed = Nothing
       }
-    , Random.generate UpdateSeed randRowGenerator
+    , Random.generate UpdateSeed randMatrixGenerator
     )
 
 
