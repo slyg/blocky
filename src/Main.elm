@@ -13,11 +13,12 @@ import Random exposing (Generator)
 import Debug exposing (toString)
 import Array exposing (toList)
 import Random.Array
+import Maybe
 
 
 colorList : Array Color
 colorList =
-    fromList [ Red, Green, Blue, Yellow, Grey ]
+    fromList [ Red, Green, Blue, Yellow ]
 
 indexesToColor : (Array (Array Int)) -> Board
 indexesToColor indexes =
@@ -29,13 +30,14 @@ indexesToColor indexes =
             ) 
         )
 
-randMatrixGenerator : Generator (Array (Array Int))
-randMatrixGenerator =
+randBoardGenerator : Generator (Array (Array Int))
+randBoardGenerator =
     let
-        rowLen = Array.length colorList + 1
+        rowLen = 6
+        colLen = rowLen
         gen = Random.int 0 (rowLen - 1)
     in
-        Random.Array.array rowLen (Random.Array.array rowLen gen)
+        Random.Array.array colLen (Random.Array.array rowLen gen)
 
 defaultBoard : Board
 defaultBoard =
@@ -50,11 +52,11 @@ defaultBoard =
 
 init : () -> (Model, Cmd Msg)
 init _ =
-    ( { board = defaultBoard
+    ( { board = Maybe.withDefault defaultBoard Nothing
       , finished = False
       , seed = Nothing
       }
-    , Random.generate UpdateSeed randMatrixGenerator
+    , Random.generate UpdateSeed randBoardGenerator
     )
 
 
@@ -71,7 +73,10 @@ update msg model =
     case msg of
 
         UpdateSeed seed ->
-            ( { model | seed = Just seed }, Cmd.none )
+            ( { model | 
+                seed = Just seed
+            ,   board = indexesToColor seed }
+            , Cmd.none )
 
         Reset ->
             init ()
@@ -128,30 +133,10 @@ view model =
                     [ button [ onClick Reset ] [ text "Restart" ] ]
             else
                 div [] []
-        seedValue : String
-        seedValue =
-            case model.seed of
-                Nothing ->
-                    "No seed"
-                Just seed ->
-                    let
-                        colorsString =
-                            indexesToColor seed
-                                |> Array.map (\color -> color |> toString)
-                                |> toList
-                                |> toString
-                    in
-                        colorsString
     in
         div []
-            [ div []
-                [ Board.view model.board
-                , restartButton
-                ]
-            , div []
-                [ text "Seed: "
-                , text seedValue
-                ]
+            [ Board.view model.board
+            , restartButton
             ]
 
 
